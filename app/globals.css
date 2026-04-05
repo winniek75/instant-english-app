@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #171717;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+  100% { opacity: 0; transform: scale(0) rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  70% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-pulse-custom {
+  animation: pulse 2s infinite;
+}
+
+.animate-bounce-custom {
+  animation: bounce 1s infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-popIn {
+  animation: popIn 0.4s ease-out;
+}
+
+/* Hover effects */
+.hover-glow:hover {
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+}
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Loading spinner */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6, #EC4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Card styles */
+.card-base {
+  @apply bg-white rounded-2xl shadow-lg border border-gray-100 transition-all duration-300;
+}
+
+.card-base:hover {
+  @apply shadow-xl border-gray-200;
+}
+
+/* Level badge styles */
+.level-badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-bold;
+}
+
+/* Shuffle word chip */
+.word-chip {
+  @apply px-4 py-2 rounded-xl font-medium text-base cursor-pointer select-none
+    transition-all duration-200 border-2;
+}
+
+.word-chip:hover {
+  @apply shadow-md;
+  transform: translateY(-2px);
+}
+
+.word-chip:active {
+  transform: translateY(0);
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply h-3 rounded-full overflow-hidden bg-gray-200;
+}
+
+.progress-bar-fill {
+  @apply h-full rounded-full transition-all duration-700 ease-out;
+}
+
+/* Shimmer effect for loading */
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

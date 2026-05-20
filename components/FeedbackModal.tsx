@@ -1,5 +1,8 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+import { playCorrectSound, playWrongSound } from '@/lib/sounds';
+
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +22,22 @@ interface FeedbackModalProps {
 }
 
 export default function FeedbackModal({ isOpen, onClose, feedback, userInput }: FeedbackModalProps) {
+  const hasPlayedSound = useRef(false);
+
+  useEffect(() => {
+    if (isOpen && feedback && !hasPlayedSound.current) {
+      hasPlayedSound.current = true;
+      if (feedback.isCorrect) {
+        playCorrectSound();
+      } else {
+        playWrongSound();
+      }
+    }
+    if (!isOpen) {
+      hasPlayedSound.current = false;
+    }
+  }, [isOpen, feedback]);
+
   if (!isOpen || !feedback) return null;
 
   const getScoreColor = (score: number) => {

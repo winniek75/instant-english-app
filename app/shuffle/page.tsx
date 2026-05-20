@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { getShuffleSentencesByLevel, getLevelLabel, getLevelColor, Level, ShuffleSentence } from '@/lib/words';
+import { playCorrectSound, playWrongSound } from '@/lib/sounds';
+import { recordAttempt, recordWrongAnswer, incrementSessions } from '@/lib/storage';
 
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
@@ -87,7 +89,18 @@ function ShuffleContent() {
     setTotalAnswered(totalAnswered + 1);
     if (correct) {
       setScore(score + 1);
+      playCorrectSound();
+    } else {
+      playWrongSound();
+      recordWrongAnswer({
+        question: currentSentence.japanese,
+        userAnswer,
+        correctAnswer: currentSentence.english,
+        mode: 'shuffle',
+        level,
+      });
     }
+    recordAttempt('shuffle', level, correct, correct ? 100 : 0);
   };
 
   const handleNext = () => {
@@ -96,6 +109,7 @@ function ShuffleContent() {
     } else {
       setGameComplete(true);
       setIsRunning(false);
+      incrementSessions();
     }
   };
 

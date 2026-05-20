@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import WordPracticeCard from '@/components/WordPracticeCard';
 import { getWordsByLevel, getLevelLabel, getLevelColor, Level } from '@/lib/words';
+import { incrementSessions } from '@/lib/storage';
 
 function PracticeContent() {
   const router = useRouter();
@@ -23,6 +24,7 @@ function PracticeContent() {
       setCurrentIndex(currentIndex + 1);
     } else {
       setLearnedWords([...learnedWords, currentIndex]);
+      incrementSessions();
     }
   };
 

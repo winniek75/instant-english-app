@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Word } from '@/lib/words';
+import { playCorrectSound, playWrongSound } from '@/lib/sounds';
+import { recordAttempt, recordWrongAnswer } from '@/lib/storage';
 
 interface WordPracticeCardProps {
   word: Word;
@@ -34,18 +36,28 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
     setScore(currentScore);
 
     if (isCorrect) {
+      playCorrectSound();
       setFeedback({
         isCorrect: true,
         message: '正解！完璧です！',
         color: 'green'
       });
     } else {
+      playWrongSound();
+      recordWrongAnswer({
+        question: word.japanese,
+        userAnswer: userInput,
+        correctAnswer: word.english,
+        mode: 'practice-spelling',
+        level: word.level,
+      });
       setFeedback({
         isCorrect: false,
         message: `正解: ${word.english}`,
         color: 'red'
       });
     }
+    recordAttempt('practice', word.level, isCorrect, currentScore);
   };
 
   const handleSentenceSubmit = async () => {
@@ -69,6 +81,19 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
       const data = await response.json();
       setFeedback(data);
       setScore(data.score);
+      if (data.isCorrect) {
+        playCorrectSound();
+      } else {
+        playWrongSound();
+        recordWrongAnswer({
+          question: `「${word.english}」を使って英文を作る`,
+          userAnswer: userInput,
+          correctAnswer: data.correctedSentence || '',
+          mode: 'practice-sentence',
+          level: word.level,
+        });
+      }
+      recordAttempt('practice', word.level, data.isCorrect, data.score);
     } catch (error) {
       console.error('Error:', error);
       setFeedback({

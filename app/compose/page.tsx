@@ -7,6 +7,7 @@ import ComposeInput from '@/components/ComposeInput';
 import VoiceInput from '@/components/VoiceInput';
 import FeedbackModal from '@/components/FeedbackModal';
 import { getWordsByLevel, getPromptsByLevel, getLevelLabel, getLevelColor, Level } from '@/lib/words';
+import { recordAttempt, recordWrongAnswer } from '@/lib/storage';
 
 type ComposeMode = 'word-based' | 'free' | 'voice';
 
@@ -59,6 +60,19 @@ function ComposeContent() {
       const data = await response.json();
       setFeedback(data);
       setShowFeedback(true);
+      recordAttempt('compose', level, data.isCorrect, data.score);
+      if (!data.isCorrect) {
+        const taskStr = mode === 'word-based'
+          ? `「${filteredWords[currentWordIndex].english}」を使って英文を作る`
+          : filteredPrompts[currentPromptIndex].japanese;
+        recordWrongAnswer({
+          question: taskStr,
+          userAnswer: text,
+          correctAnswer: data.correctedSentence || '',
+          mode: 'compose',
+          level,
+        });
+      }
     } catch (error) {
       console.error('Error:', error);
       setFeedback({

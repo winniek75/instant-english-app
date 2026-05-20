@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Level, getLevelLabel, getLevelColor, getWordsByLevel, getPromptsByLevel, getShuffleSentencesByLevel } from '@/lib/words';
+import { loadProgress, getOverallStats, ProgressData } from '@/lib/storage';
 
 type GameMode = 'practice' | 'compose' | 'shuffle';
 
@@ -42,6 +43,13 @@ const modeConfig: Record<GameMode, { icon: string; title: string; desc: string; 
 export default function Home() {
   const router = useRouter();
   const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
+  const [progress, setProgress] = useState<ProgressData | null>(null);
+
+  useEffect(() => {
+    setProgress(loadProgress());
+  }, []);
+
+  const stats = progress ? getOverallStats(progress) : null;
 
   const handleStart = (mode: GameMode, level: Level) => {
     router.push(`/${mode}?level=${level}`);
@@ -134,6 +142,47 @@ export default function Home() {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* Progress stats */}
+        {stats && stats.totalAttempts > 0 && (
+          <div className="card-base p-6 max-w-3xl mx-auto mb-8 animate-fadeIn">
+            <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">あなたの学習記録</h3>
+            <div className="grid grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-extrabold text-blue-600">{stats.totalAttempts}</div>
+                <div className="text-xs text-gray-500 mt-1">総回答数</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-extrabold text-green-600">{stats.totalCorrect}</div>
+                <div className="text-xs text-gray-500 mt-1">正解数</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-extrabold text-purple-600">{stats.accuracy}%</div>
+                <div className="text-xs text-gray-500 mt-1">正解率</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-extrabold text-red-500">{stats.wrongAnswerCount}</div>
+                <div className="text-xs text-gray-500 mt-1">間違い記録</div>
+              </div>
+            </div>
+            {progress && progress.wrongAnswers.length > 0 && (
+              <details className="mt-4">
+                <summary className="text-sm text-gray-500 cursor-pointer hover:text-gray-700 text-center">
+                  最近の間違いを見る ({Math.min(progress.wrongAnswers.length, 5)}件)
+                </summary>
+                <div className="mt-3 space-y-2">
+                  {progress.wrongAnswers.slice(-5).reverse().map((w, i) => (
+                    <div key={i} className="bg-red-50 p-3 rounded-lg text-sm">
+                      <div className="text-gray-700 font-medium">{w.question}</div>
+                      <div className="text-red-600">あなたの回答: {w.userAnswer}</div>
+                      <div className="text-green-600">正解: {w.correctAnswer}</div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
         )}
 

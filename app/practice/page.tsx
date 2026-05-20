@@ -103,13 +103,25 @@ function PracticeContent() {
           onComplete={handleComplete}
         />
 
-        {learnedWords.length === filteredWords.length && (
+        {learnedWords.length === filteredWords.length && (() => {
+          const practiceAccuracy = scores.length > 0 ? averageScore : 0;
+          const nearMissMsg = practiceAccuracy === 100
+            ? 'PERFECT! \uD83D\uDC8E'
+            : practiceAccuracy >= 80
+              ? `\u3042\u3068${100 - practiceAccuracy}\u70B9\u3067\u30D1\u30FC\u30D5\u30A7\u30AF\u30C8\uFF01`
+              : null;
+          return (
           <div className="mt-8 text-center animate-popIn">
             <div className="card-base p-8 max-w-2xl mx-auto">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+              <div className="text-6xl mb-4">{practiceAccuracy === 100 ? '\uD83D\uDC8E' : '\uD83C\uDF89'}</div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 すべての単語を学習しました！
               </h2>
+              {nearMissMsg && (
+                <p className={`text-lg font-bold mb-2 ${practiceAccuracy === 100 ? 'text-yellow-500' : 'text-blue-500'}`}>
+                  {nearMissMsg}
+                </p>
+              )}
               <div className="mb-6 space-y-2">
                 <p className="text-gray-600">
                   {filteredWords.length}個の単語を完了しました。素晴らしい！

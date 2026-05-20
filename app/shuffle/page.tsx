@@ -32,6 +32,8 @@ function ShuffleContent() {
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [showStreakCelebration, setShowStreakCelebration] = useState(false);
 
   const currentSentence: ShuffleSentence | undefined = sentences[currentIndex];
 
@@ -89,8 +91,15 @@ function ShuffleContent() {
     setTotalAnswered(totalAnswered + 1);
     if (correct) {
       setScore(score + 1);
+      const newStreak = streak + 1;
+      setStreak(newStreak);
       playCorrectSound();
+      if (newStreak >= 3 && newStreak % 3 === 0) {
+        setShowStreakCelebration(true);
+        setTimeout(() => setShowStreakCelebration(false), 1200);
+      }
     } else {
+      setStreak(0);
       playWrongSound();
       recordWrongAnswer({
         question: currentSentence.japanese,
@@ -114,6 +123,10 @@ function ShuffleContent() {
       setGameComplete(true);
       setIsRunning(false);
       incrementSessions();
+      // Report game result to WiseXP
+      if (typeof window !== 'undefined' && window.WiseXP) {
+        window.WiseXP.reportGame({ score, correct: score, total: totalAnswered, maxCombo: 0, grade: 0 });
+      }
     }
   };
 
@@ -136,14 +149,25 @@ function ShuffleContent() {
 
   if (gameComplete) {
     const accuracy = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+    const remaining = totalAnswered - score;
+    const nearMissMessage = accuracy === 100
+      ? 'PERFECT! \uD83D\uDC8E'
+      : accuracy >= 80
+        ? `\u3042\u3068${remaining}\u554F\u3067\u30D1\u30FC\u30D5\u30A7\u30AF\u30C8\uFF01`
+        : null;
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-rose-50 p-4">
         <div className="container mx-auto max-w-2xl">
           <div className="card-base p-8 text-center animate-popIn mt-12">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
+            <div className="text-6xl mb-4">{accuracy === 100 ? '\uD83D\uDC8E' : '\uD83C\uDF89'}</div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">
               クリア！
             </h2>
+            {nearMissMessage && (
+              <p className={`text-lg font-bold mb-4 ${accuracy === 100 ? 'text-yellow-500' : 'text-blue-500'}`}>
+                {nearMissMessage}
+              </p>
+            )}
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className={`${colors.bg} p-4 rounded-xl`}>
                 <div className={`text-2xl font-extrabold ${colors.text}`}>{score}/{totalAnswered}</div>
@@ -271,6 +295,14 @@ function ShuffleContent() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Streak celebration */}
+        {showStreakCelebration && (
+          <div className="card-base p-4 mb-5 animate-popIn border-yellow-300 bg-yellow-50 text-center">
+            <div className="text-3xl mb-1">{streak >= 9 ? '\uD83D\uDD25' : streak >= 6 ? '\u2B50' : '\uD83C\uDF1F'}</div>
+            <p className="text-lg font-bold text-yellow-600">{streak} combo!</p>
           </div>
         )}
 

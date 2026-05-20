@@ -61,6 +61,10 @@ function ComposeContent() {
       setFeedback(data);
       setShowFeedback(true);
       recordAttempt('compose', level, data.isCorrect, data.score);
+      // Report to WiseXP
+      if (typeof window !== 'undefined' && window.WiseXP) {
+        window.WiseXP.reportGame({ score: data.score, correct: data.isCorrect ? 1 : 0, total: 1, maxCombo: 0, grade: 0 });
+      }
       if (!data.isCorrect) {
         const taskStr = mode === 'word-based'
           ? `「${filteredWords[currentWordIndex].english}」を使って英文を作る`
@@ -72,6 +76,10 @@ function ComposeContent() {
           mode: 'compose',
           level,
         });
+        // Report wrong answer to WiseXP
+        if (typeof window !== 'undefined' && window.WiseXP) {
+          window.WiseXP.reportWrong({ question: taskStr, correct: data.correctedSentence || '', playerAnswer: text });
+        }
       }
     } catch (error) {
       console.error('Error:', error);

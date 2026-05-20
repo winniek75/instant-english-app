@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+
+declare global { interface Window { WiseXP?: any; } }
 import { Level, getLevelLabel, getLevelColor, getWordsByLevel, getPromptsByLevel, getShuffleSentencesByLevel } from '@/lib/words';
 import { loadProgress, getOverallStats, ProgressData } from '@/lib/storage';
 
@@ -47,6 +49,10 @@ export default function Home() {
 
   useEffect(() => {
     setProgress(loadProgress());
+    // Initialize WiseXP SDK
+    if (typeof window !== 'undefined' && window.WiseXP) {
+      window.WiseXP.init('instant-english-app');
+    }
   }, []);
 
   const stats = progress ? getOverallStats(progress) : null;

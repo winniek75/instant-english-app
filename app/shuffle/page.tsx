@@ -99,6 +99,10 @@ function ShuffleContent() {
         mode: 'shuffle',
         level,
       });
+      // Report wrong answer to WiseXP
+      if (typeof window !== 'undefined' && window.WiseXP) {
+        window.WiseXP.reportWrong({ question: currentSentence.japanese, correct: currentSentence.english, playerAnswer: userAnswer });
+      }
     }
     recordAttempt('shuffle', level, correct, correct ? 100 : 0);
   };

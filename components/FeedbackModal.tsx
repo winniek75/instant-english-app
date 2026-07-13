@@ -7,7 +7,9 @@ interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
   feedback: {
-    score: number;
+    score: number | null;
+    isDemo?: boolean;
+    isError?: boolean;
     isCorrect: boolean;
     feedback: {
       grammar: string;
@@ -40,13 +42,15 @@ export default function FeedbackModal({ isOpen, onClose, feedback, userInput }: 
 
   if (!isOpen || !feedback) return null;
 
-  const getScoreColor = (score: number) => {
+  const getScoreColor = (score: number | null) => {
+    if (score === null) return 'text-gray-400';
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getScoreEmoji = (score: number) => {
+  const getScoreEmoji = (score: number | null) => {
+    if (score === null) return '🔍';
     if (score >= 90) return '🌟';
     if (score >= 80) return '😊';
     if (score >= 70) return '👍';
@@ -73,7 +77,7 @@ export default function FeedbackModal({ isOpen, onClose, feedback, userInput }: 
           <div className="text-center">
             <div className="text-6xl mb-2">{getScoreEmoji(feedback.score)}</div>
             <div className={`text-5xl font-bold ${getScoreColor(feedback.score)}`}>
-              {feedback.score}点
+              {feedback.score === null ? '—' : feedback.score}点
             </div>
             <div className="text-gray-600 mt-2">
               {feedback.isCorrect ? '素晴らしい！' : 'もう少し頑張ろう！'}

@@ -33,18 +33,20 @@ export async function POST(request: NextRequest) {
 
       const isCorrect = score >= 70;
 
+      // ⚠️ 偽スコア防止: デモモードでは数値スコアを出さず、その旨を明示する
       return NextResponse.json({
-        score: Math.min(score, 95), // Cap at 95 for demo mode
+        isDemo: true,
+        score: null,
         isCorrect,
         feedback: {
-          grammar: hasCapitalization && hasPunctuation
-            ? '基本的な文法は正しいです。（デモモード）'
-            : '大文字と句読点に注意してください。（デモモード）',
-          naturalness: '自然な表現です。',
+          grammar: '【デモモード】AI判定は現在利用できません。以下は形式チェックのみの結果です。',
+          naturalness: hasCapitalization && hasPunctuation
+            ? '文頭の大文字と文末の記号はOKです。'
+            : '文頭は大文字、文末はピリオド(.)や?をつけましょう。',
           vocabulary: hasTargetWord
-            ? '指定された単語を正しく使用しています。'
-            : targetWord ? `「${targetWord}」という単語が含まれていません。` : '適切な語彙を使用しています。',
-          improvements: '環境変数ANTHROPIC_API_KEYを設定すると、より詳細なAI判定が利用できます。',
+            ? '指定された単語が含まれています。'
+            : targetWord ? `「${targetWord}」という単語が含まれていません。` : '（単語チェックなし）',
+          improvements: '正確なAI判定を利用するには、先生に「AI判定の設定」を依頼してください（ANTHROPIC_API_KEY）。',
         },
         correctedSentence: userInput,
         alternativeSentences: isCorrect ? ['Great work!', 'Well done!'] : ['Keep trying!', 'You can do it!'],
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
         system: systemPrompt,
         messages: [
@@ -87,10 +89,12 @@ export async function POST(request: NextRequest) {
       console.error('Failed to parse AI response:', parseError);
       // Return fallback response if parsing fails
       return NextResponse.json({
-        score: 70,
-        isCorrect: true,
+        isDemo: false,
+        isError: true,
+        score: null,
+        isCorrect: null,
         feedback: {
-          grammar: 'AI判定でエラーが発生しました。',
+          grammar: 'AI判定でエラーが発生しました。この回答は採点されていません。',
           naturalness: '文章は理解できます。',
           vocabulary: '語彙は適切です。',
           improvements: 'もう一度お試しください。',
@@ -104,10 +108,11 @@ export async function POST(request: NextRequest) {
 
     // Return a fallback response for any errors
     return NextResponse.json({
-      score: 65,
-      isCorrect: true,
+      isError: true,
+      score: null,
+      isCorrect: null,
       feedback: {
-        grammar: 'システムエラーが発生しました。',
+        grammar: 'システムエラーが発生しました。この回答は採点されていません。',
         naturalness: '基本的な構造は理解できます。',
         vocabulary: '使用した語彙は適切です。',
         improvements: '技術的な問題により詳細な判定ができませんでした。後でもう一度お試しください。',

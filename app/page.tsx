@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare global { interface Window { WiseXP?: any; } }
 import { Level, getLevelLabel, getLevelColor, getWordsByLevel, getPromptsByLevel, getShuffleSentencesByLevel } from '@/lib/words';
 import { loadProgress, getOverallStats, ProgressData } from '@/lib/storage';

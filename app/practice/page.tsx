@@ -163,7 +163,8 @@ function PracticeContent() {
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

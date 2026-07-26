@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { getShuffleSentencesByLevel, getLevelLabel, getLevelColor, Level, ShuffleSentence } from '@/lib/words';
 import { playCorrectSound, playWrongSound } from '@/lib/sounds';
 import { recordAttempt, recordWrongAnswer, incrementSessions } from '@/lib/storage';
+
+declare global { interface Window { WiseGame?: any; } }
 
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
@@ -22,6 +24,7 @@ function ShuffleContent() {
   const level = (searchParams.get('level') as Level) || 'beginner';
   const sentences = getShuffleSentencesByLevel(level);
   const colors = getLevelColor(level);
+  const sessionWrongRef = useRef<Array<{q:string;correct:string;chosen:string;tag:string}>>([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
@@ -108,6 +111,8 @@ function ShuffleContent() {
         mode: 'shuffle',
         level,
       });
+      sessionWrongRef.current.push({ q: currentSentence.japanese, correct: currentSentence.english, chosen: userAnswer, tag: 'word_order' });
+      if (sessionWrongRef.current.length > 20) sessionWrongRef.current = sessionWrongRef.current.slice(-20);
       // Report wrong answer to WiseXP
       if (typeof window !== 'undefined' && window.WiseXP) {
         window.WiseXP.reportWrong({ question: currentSentence.japanese, correct: currentSentence.english, playerAnswer: userAnswer });
@@ -127,6 +132,14 @@ function ShuffleContent() {
       if (typeof window !== 'undefined' && window.WiseXP) {
         window.WiseXP.reportGame({ score, correct: score, total: totalAnswered, maxCombo: 0, grade: 0 });
       }
+      // Report to MoWISE portal
+      try {
+        const acc = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+        window.WiseGame?.reportComplete?.({
+          score, maxScore: totalAnswered, accuracy: acc,
+          metadata: { level, wrongAnswers: sessionWrongRef.current }
+        });
+      } catch(e) {}
     }
   };
 

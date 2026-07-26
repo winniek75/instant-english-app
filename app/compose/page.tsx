@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+
+declare global { interface Window { WiseGame?: any; } }
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import ComposeInput from '@/components/ComposeInput';
@@ -80,6 +82,13 @@ function ComposeContent() {
         if (typeof window !== 'undefined' && window.WiseXP) {
           window.WiseXP.reportWrong({ question: taskStr, correct: data.correctedSentence || '', playerAnswer: text });
         }
+        // Report to MoWISE portal
+        try {
+          window.WiseGame?.reportComplete?.({
+            score: data.score ?? 0, maxScore: 100, accuracy: data.score ?? 0,
+            metadata: { level, wrongAnswers: [{ q: taskStr, correct: data.correctedSentence || '', chosen: text, tag: 'other_grammar' }] }
+          });
+        } catch(e) {}
       }
     } catch (error) {
       console.error('Error:', error);

@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "瞬間英作文トレーニング",
-  description: "中学生向けの瞬間英作文トレーニングアプリ。AIが自動で英作文を判定・フィードバック。単語練習、英作文、シャッフル翻訳の3つのモードで楽しく英語力を伸ばそう！",
+  description: "瞬間英作文トレーニングアプリ。単語練習、英作文、シャッフル翻訳の3つのモードと、はじめて〜上級の4レベルで、自分で英語を作る練習ができます。",
 };
 
 export default function RootLayout({

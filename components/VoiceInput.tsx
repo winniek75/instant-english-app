@@ -6,11 +6,14 @@ import { useState, useEffect, useRef } from 'react';
 
 interface VoiceInputProps {
   prompt: string;
+  hint?: string;
+  frame?: string;
+  aiAvailable?: boolean | null;
   onSubmit: (text: string) => void;
   isLoading?: boolean;
 }
 
-export default function VoiceInput({ prompt, onSubmit, isLoading = false }: VoiceInputProps) {
+export default function VoiceInput({ prompt, hint, frame, aiAvailable = null, onSubmit, isLoading = false }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(true);
@@ -86,6 +89,13 @@ export default function VoiceInput({ prompt, onSubmit, isLoading = false }: Voic
             🎤 口頭で英作文！
           </h2>
           <p className="text-lg text-gray-700">{prompt}</p>
+          {frame && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-700 font-bold mb-1">🧩 この形で言ってみよう</p>
+              <p className="text-2xl font-bold text-amber-900 tracking-wide">{frame}</p>
+            </div>
+          )}
+          {hint && <p className="text-sm text-gray-500">💡 ヒント: {hint}</p>}
           <p className="text-sm text-gray-500">
             マイクボタンを押して話し始めてください
           </p>
@@ -130,7 +140,7 @@ export default function VoiceInput({ prompt, onSubmit, isLoading = false }: Voic
                 }`}
                 disabled={isLoading || !transcript.trim()}
               >
-                {isLoading ? '判定中...' : '提出する'}
+                {isLoading ? '確認中...' : aiAvailable === false ? 'お手本でたしかめる' : '提出する'}
               </button>
             </div>
           )}

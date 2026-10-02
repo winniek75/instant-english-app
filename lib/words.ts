@@ -1,4 +1,11 @@
-export type Level = 'beginner' | 'intermediate' | 'advanced';
+export type Level = 'starter' | 'beginner' | 'intermediate' | 'advanced';
+
+export const LEVELS: Level[] = ['starter', 'beginner', 'intermediate', 'advanced'];
+
+// URLパラメータなどから来た文字列を安全に Level にする（不正な値は初級）
+export function parseLevel(value: string | null | undefined): Level {
+  return (LEVELS as string[]).includes(value || '') ? (value as Level) : 'beginner';
+}
 
 export interface Word {
   id: number;
@@ -8,6 +15,9 @@ export interface Word {
   example: string;
   exampleJp: string;
   level: Level;
+  // 文型のささえ（例: "I like ___."）。「はじめて」レベルで使う
+  frame?: string;
+  frameJp?: string;
 }
 
 export interface CompositionPrompt {
@@ -15,9 +25,124 @@ export interface CompositionPrompt {
   japanese: string;
   hint: string;
   level: Level;
+  // 文型のささえ（例: "I like ___."）
+  frame?: string;
+  // お手本（答えの一例）。AI採点が使えないときの見くらべ用
+  model?: string;
 }
 
 export const words: Word[] = [
+  // === STARTER / はじめて (10 words, 文型つき) ===
+  {
+    id: 101,
+    english: "like",
+    japanese: "すき",
+    partOfSpeech: "動詞",
+    example: "I like dogs.",
+    exampleJp: "わたしは犬がすきです。",
+    level: "starter",
+    frame: "I like ___.",
+    frameJp: "わたしは ___ が すきです。"
+  },
+  {
+    id: 102,
+    english: "play",
+    japanese: "（スポーツを）する、あそぶ",
+    partOfSpeech: "動詞",
+    example: "I play soccer.",
+    exampleJp: "わたしはサッカーをします。",
+    level: "starter",
+    frame: "I play ___.",
+    frameJp: "わたしは ___ を します。"
+  },
+  {
+    id: 103,
+    english: "have",
+    japanese: "もっている",
+    partOfSpeech: "動詞",
+    example: "I have a pen.",
+    exampleJp: "わたしはペンをもっています。",
+    level: "starter",
+    frame: "I have a ___.",
+    frameJp: "わたしは ___ を もっています。"
+  },
+  {
+    id: 104,
+    english: "eat",
+    japanese: "たべる",
+    partOfSpeech: "動詞",
+    example: "I eat rice.",
+    exampleJp: "わたしはごはんをたべます。",
+    level: "starter",
+    frame: "I eat ___.",
+    frameJp: "わたしは ___ を たべます。"
+  },
+  {
+    id: 105,
+    english: "want",
+    japanese: "ほしい",
+    partOfSpeech: "動詞",
+    example: "I want a bike.",
+    exampleJp: "わたしはじてんしゃがほしいです。",
+    level: "starter",
+    frame: "I want a ___.",
+    frameJp: "わたしは ___ が ほしいです。"
+  },
+  {
+    id: 106,
+    english: "can",
+    japanese: "できる",
+    partOfSpeech: "助動詞",
+    example: "I can swim.",
+    exampleJp: "わたしはおよげます。",
+    level: "starter",
+    frame: "I can ___.",
+    frameJp: "わたしは ___ が できます。"
+  },
+  {
+    id: 107,
+    english: "happy",
+    japanese: "うれしい、しあわせな",
+    partOfSpeech: "形容詞",
+    example: "I am happy.",
+    exampleJp: "わたしはうれしいです。",
+    level: "starter",
+    frame: "I am ___.",
+    frameJp: "わたしは ___ です。"
+  },
+  {
+    id: 108,
+    english: "dog",
+    japanese: "犬",
+    partOfSpeech: "名詞",
+    example: "This is my dog.",
+    exampleJp: "これはわたしの犬です。",
+    level: "starter",
+    frame: "This is my ___.",
+    frameJp: "これは わたしの ___ です。"
+  },
+  {
+    id: 109,
+    english: "go",
+    japanese: "行く",
+    partOfSpeech: "動詞",
+    example: "I go to school.",
+    exampleJp: "わたしは学校に行きます。",
+    level: "starter",
+    frame: "I go to ___.",
+    frameJp: "わたしは ___ に 行きます。"
+  },
+  {
+    id: 110,
+    english: "study",
+    japanese: "べんきょうする",
+    partOfSpeech: "動詞",
+    example: "I study English.",
+    exampleJp: "わたしはえいごをべんきょうします。",
+    level: "starter",
+    frame: "I study ___.",
+    frameJp: "わたしは ___ を べんきょうします。"
+  },
   // === BEGINNER (30 words) ===
   {
     id: 1,
@@ -836,31 +961,39 @@ export const words: Word[] = [
 ];
 
 export const compositionPrompts: CompositionPrompt[] = [
-  // === BEGINNER (7 prompts) ===
-  { id: 1, japanese: "今朝何を食べましたか？", hint: "breakfast, eat, morning", level: "beginner" },
-  { id: 2, japanese: "週末は何をしますか？", hint: "weekend, plan, activity", level: "beginner" },
-  { id: 3, japanese: "好きな季節は何ですか？", hint: "favorite, season, because", level: "beginner" },
-  { id: 4, japanese: "学校での一番好きな科目は？", hint: "favorite, subject, school", level: "beginner" },
-  { id: 5, japanese: "将来の夢は何ですか？", hint: "future, dream, want to be", level: "beginner" },
-  { id: 6, japanese: "昨日何をしましたか？", hint: "yesterday, did, activities", level: "beginner" },
-  { id: 7, japanese: "趣味は何ですか？", hint: "hobby, free time, enjoy", level: "beginner" },
+  // === STARTER / はじめて (6 prompts, 文型つき) ===
+  { id: 101, japanese: "すきな たべものは なんですか？", hint: "pizza, sushi, apples", level: "starter", frame: "I like ___.", model: "I like pizza." },
+  { id: 102, japanese: "なにか スポーツを しますか？", hint: "soccer, tennis, baseball", level: "starter", frame: "I play ___.", model: "I play soccer." },
+  { id: 103, japanese: "ペットや もちものを ひとつ しょうかいしよう。", hint: "dog, cat, bike, ball", level: "starter", frame: "I have a ___.", model: "I have a dog." },
+  { id: 104, japanese: "いまの きもちは？", hint: "happy, hungry, sleepy, fine", level: "starter", frame: "I am ___.", model: "I am happy." },
+  { id: 105, japanese: "できることを ひとつ 言おう。", hint: "swim, cook, run fast", level: "starter", frame: "I can ___.", model: "I can swim." },
+  { id: 106, japanese: "ほしいものは なんですか？", hint: "bike, game, dog", level: "starter", frame: "I want a ___.", model: "I want a bike." },
+
+  // === BEGINNER (7 prompts, やさしい順) ===
+  { id: 3, japanese: "好きな季節は何ですか？", hint: "favorite, season, because", level: "beginner", frame: "My favorite season is ___.", model: "My favorite season is summer." },
+  { id: 4, japanese: "学校での一番好きな科目は？", hint: "favorite, subject, school", level: "beginner", frame: "My favorite subject is ___.", model: "My favorite subject is English." },
+  { id: 7, japanese: "趣味は何ですか？", hint: "hobby, free time, enjoy", level: "beginner", frame: "My hobby is ___.", model: "My hobby is playing soccer." },
+  { id: 1, japanese: "今朝何を食べましたか？", hint: "breakfast, eat, morning", level: "beginner", frame: "I ate ___ this morning.", model: "I ate bread this morning." },
+  { id: 6, japanese: "昨日何をしましたか？", hint: "yesterday, did, activities", level: "beginner", frame: "I ___ yesterday.", model: "I played tennis yesterday." },
+  { id: 2, japanese: "週末は何をしますか？", hint: "weekend, plan, activity", level: "beginner", frame: "I ___ on weekends.", model: "I play video games on weekends." },
+  { id: 5, japanese: "将来の夢は何ですか？", hint: "future, dream, want to be", level: "beginner", frame: "I want to be a ___.", model: "I want to be a teacher." },
 
   // === INTERMEDIATE (7 prompts) ===
-  { id: 8, japanese: "友達と何をして遊びますか？", hint: "friends, play, together", level: "intermediate" },
-  { id: 9, japanese: "どんな音楽が好きですか？", hint: "music, like, listen", level: "intermediate" },
-  { id: 10, japanese: "家族について教えてください", hint: "family, members, live", level: "intermediate" },
-  { id: 11, japanese: "環境問題について、あなたの考えを教えてください。", hint: "environment, protect, should", level: "intermediate" },
-  { id: 12, japanese: "あなたが尊敬する人は誰ですか？その理由は？", hint: "respect, because, admire", level: "intermediate" },
-  { id: 13, japanese: "もし外国に住むなら、どこに住みたいですか？", hint: "if, country, would like to", level: "intermediate" },
-  { id: 14, japanese: "テクノロジーは私たちの生活をどう変えましたか？", hint: "technology, change, convenient", level: "intermediate" },
+  { id: 8, japanese: "友達と何をして遊びますか？", hint: "friends, play, together", level: "intermediate", model: "I play basketball with my friends." },
+  { id: 9, japanese: "どんな音楽が好きですか？", hint: "music, like, listen", level: "intermediate", model: "I like pop music." },
+  { id: 10, japanese: "家族について教えてください", hint: "family, members, live", level: "intermediate", model: "There are four people in my family." },
+  { id: 11, japanese: "環境問題について、あなたの考えを教えてください。", hint: "environment, protect, should", level: "intermediate", model: "We should protect the environment." },
+  { id: 12, japanese: "あなたが尊敬する人は誰ですか？その理由は？", hint: "respect, because, admire", level: "intermediate", model: "I respect my mother because she works hard." },
+  { id: 13, japanese: "もし外国に住むなら、どこに住みたいですか？", hint: "if, country, would like to", level: "intermediate", model: "I would like to live in Canada." },
+  { id: 14, japanese: "テクノロジーは私たちの生活をどう変えましたか？", hint: "technology, change, convenient", level: "intermediate", model: "Technology has made our lives more convenient." },
 
   // === ADVANCED (6 prompts) ===
-  { id: 15, japanese: "SNSの良い点と悪い点について論じてください。", hint: "social media, advantage, disadvantage, however", level: "advanced" },
-  { id: 16, japanese: "グローバル化が文化に与える影響について述べてください。", hint: "globalization, culture, influence, tradition", level: "advanced" },
-  { id: 17, japanese: "AIが将来の仕事に与える影響についてどう思いますか？", hint: "artificial intelligence, replace, opportunity, challenge", level: "advanced" },
-  { id: 18, japanese: "教育制度をどのように改善すべきだと思いますか？", hint: "education system, improve, creativity, critical thinking", level: "advanced" },
-  { id: 19, japanese: "持続可能な社会を実現するために、私たちは何をすべきですか？", hint: "sustainable, society, responsibility, future generations", level: "advanced" },
-  { id: 20, japanese: "読書と動画、どちらが学習に効果的だと思いますか？理由を述べてください。", hint: "reading, video, effective, concentration, compare", level: "advanced" },
+  { id: 15, japanese: "SNSの良い点と悪い点について論じてください。", hint: "social media, advantage, disadvantage, however", level: "advanced", model: "Social media helps us connect with people. However, it can also spread false information." },
+  { id: 16, japanese: "グローバル化が文化に与える影響について述べてください。", hint: "globalization, culture, influence, tradition", level: "advanced", model: "Globalization influences local cultures, but we should keep our traditions." },
+  { id: 17, japanese: "AIが将来の仕事に与える影響についてどう思いますか？", hint: "artificial intelligence, replace, opportunity, challenge", level: "advanced", model: "I think AI will replace some jobs, but it will also create new opportunities." },
+  { id: 18, japanese: "教育制度をどのように改善すべきだと思いますか？", hint: "education system, improve, creativity, critical thinking", level: "advanced", model: "I think schools should teach creativity and critical thinking more." },
+  { id: 19, japanese: "持続可能な社会を実現するために、私たちは何をすべきですか？", hint: "sustainable, society, responsibility, future generations", level: "advanced", model: "We should reduce waste for future generations." },
+  { id: 20, japanese: "読書と動画、どちらが学習に効果的だと思いますか？理由を述べてください。", hint: "reading, video, effective, concentration, compare", level: "advanced", model: "I think reading is more effective because it improves concentration." },
 ];
 
 // Shuffle sentences for the shuffle mode
@@ -872,6 +1005,16 @@ export interface ShuffleSentence {
 }
 
 export const shuffleSentences: ShuffleSentence[] = [
+  // === STARTER / はじめて (3〜4語のみじかい文) ===
+  { id: 101, japanese: "わたしは犬がすきです。", english: "I like dogs.", level: "starter" },
+  { id: 102, japanese: "わたしはサッカーをします。", english: "I play soccer.", level: "starter" },
+  { id: 103, japanese: "わたしはうれしいです。", english: "I am happy.", level: "starter" },
+  { id: 104, japanese: "これはわたしの本です。", english: "This is my book.", level: "starter" },
+  { id: 105, japanese: "わたしはペンをもっています。", english: "I have a pen.", level: "starter" },
+  { id: 106, japanese: "わたしはおよげます。", english: "I can swim.", level: "starter" },
+  { id: 107, japanese: "わたしは学校に行きます。", english: "I go to school.", level: "starter" },
+  { id: 108, japanese: "あなたはねこがすきですか？", english: "Do you like cats?", level: "starter" },
+
   // === BEGINNER ===
   { id: 1, japanese: "私は毎日英語を勉強します。", english: "I study English every day.", level: "beginner" },
   { id: 2, japanese: "彼女は有名な歌手です。", english: "She is a famous singer.", level: "beginner" },
@@ -909,8 +1052,23 @@ export const shuffleSentences: ShuffleSentence[] = [
   { id: 30, japanese: "地球の約70%は水で覆われています。", english: "Approximately 70% of Earth is covered by water.", level: "advanced" },
 ];
 
+// 初級の単語は「やさしい → むずかしい」の順に出す（データの並びはアルファベット順のため）
+const BEGINNER_ORDER = [
+  'yesterday', 'together', 'question', 'problem', 'famous', 'important',
+  'different', 'health', 'language', 'moment', 'reason', 'create',
+  'believe', 'understand', 'explain', 'wonder', 'discover', 'improve',
+  'journey', 'opinion', 'experience', 'knowledge', 'education', 'necessary',
+  'valuable', 'technology', 'society', 'environment', 'government', 'achieve',
+];
+
 export function getWordsByLevel(level: Level): Word[] {
-  return words.filter(w => w.level === level);
+  const list = words.filter(w => w.level === level);
+  if (level !== 'beginner') return list;
+  const rank = (w: Word) => {
+    const i = BEGINNER_ORDER.indexOf(w.english);
+    return i === -1 ? BEGINNER_ORDER.length : i;
+  };
+  return [...list].sort((a, b) => rank(a) - rank(b));
 }
 
 export function getPromptsByLevel(level: Level): CompositionPrompt[] {
@@ -923,6 +1081,7 @@ export function getShuffleSentencesByLevel(level: Level): ShuffleSentence[] {
 
 export function getLevelLabel(level: Level): string {
   switch (level) {
+    case 'starter': return 'はじめて';
     case 'beginner': return '初級';
     case 'intermediate': return '中級';
     case 'advanced': return '上級';
@@ -931,6 +1090,8 @@ export function getLevelLabel(level: Level): string {
 
 export function getLevelColor(level: Level): { bg: string; text: string; gradient: string; border: string } {
   switch (level) {
+    case 'starter':
+      return { bg: 'bg-amber-50', text: 'text-amber-700', gradient: 'from-amber-400 to-orange-500', border: 'border-amber-300' };
     case 'beginner':
       return { bg: 'bg-emerald-50', text: 'text-emerald-700', gradient: 'from-emerald-400 to-teal-500', border: 'border-emerald-300' };
     case 'intermediate':

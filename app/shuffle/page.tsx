@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { getShuffleSentencesByLevel, getLevelLabel, getLevelColor, Level, ShuffleSentence } from '@/lib/words';
+import { getShuffleSentencesByLevel, getLevelLabel, getLevelColor, LEVELS, parseLevel, ShuffleSentence } from '@/lib/words';
+import { PORTAL_URL } from '@/lib/judge';
 import { playCorrectSound, playWrongSound } from '@/lib/sounds';
 import { recordAttempt, recordWrongAnswer, incrementSessions } from '@/lib/storage';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare global { interface Window { WiseGame?: any; } }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -21,8 +23,14 @@ function shuffleArray<T>(array: T[]): T[] {
 function ShuffleContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const level = (searchParams.get('level') as Level) || 'beginner';
-  const sentences = getShuffleSentencesByLevel(level);
+  const level = parseLevel(searchParams.get('level'));
+  // ディープリンク: /shuffle?level=starter&count=5 （count = 先頭から何問やるか）
+  const countParam = parseInt(searchParams.get('count') || '', 10);
+  const sentences = useMemo(() => {
+    const all = getShuffleSentencesByLevel(level);
+    return countParam > 0 ? all.slice(0, countParam) : all;
+  }, [level, countParam]);
+  const countQuery = countParam > 0 ? `&count=${countParam}` : '';
   const colors = getLevelColor(level);
   const sessionWrongRef = useRef<Array<{q:string;correct:string;chosen:string;tag:string}>>([]);
 
@@ -139,7 +147,7 @@ function ShuffleContent() {
           score, maxScore: totalAnswered, accuracy: acc,
           metadata: { level, wrongAnswers: sessionWrongRef.current }
         });
-      } catch(e) {}
+      } catch {}
     }
   };
 
@@ -150,6 +158,10 @@ function ShuffleContent() {
     setTimer(0);
     setGameComplete(false);
     setIsRunning(true);
+    setStreak(0);
+    sessionWrongRef.current = [];
+    // 1問だけのときなど currentIndex が変わらない場合にも並べ直す
+    initQuestion();
   };
 
   if (!currentSentence && !gameComplete) {
@@ -208,6 +220,9 @@ function ShuffleContent() {
               >
                 ホームに戻る
               </button>
+              <a href={PORTAL_URL} className="block text-sm text-gray-400 hover:text-gray-600 underline pt-1">
+                🏠 学習ホームにもどる
+              </a>
             </div>
           </div>
         </div>
@@ -372,18 +387,20 @@ function ShuffleContent() {
 
         {/* Level switcher */}
         <div className="flex justify-center gap-2 mt-6">
-          {(['beginner', 'intermediate', 'advanced'] as Level[]).map((l) => {
+          {LEVELS.map((l) => {
             const c = getLevelColor(l);
             return (
               <button
                 key={l}
                 onClick={() => {
-                  router.push(`/shuffle?level=${l}`);
+                  router.push(`/shuffle?level=${l}${countQuery}`);
                   setCurrentIndex(0);
                   setScore(0);
                   setTotalAnswered(0);
                   setTimer(0);
                   setGameComplete(false);
+                  setStreak(0);
+                  sessionWrongRef.current = [];
                 }}
                 className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
                   l === level

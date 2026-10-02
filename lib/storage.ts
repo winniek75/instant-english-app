@@ -38,16 +38,19 @@ function defaultModeStats(): ModeStats {
 function defaultProgress(): ProgressData {
   return {
     practice: {
+      starter: defaultModeStats(),
       beginner: defaultModeStats(),
       intermediate: defaultModeStats(),
       advanced: defaultModeStats(),
     },
     compose: {
+      starter: defaultModeStats(),
       beginner: defaultModeStats(),
       intermediate: defaultModeStats(),
       advanced: defaultModeStats(),
     },
     shuffle: {
+      starter: defaultModeStats(),
       beginner: defaultModeStats(),
       intermediate: defaultModeStats(),
       advanced: defaultModeStats(),
@@ -129,7 +132,7 @@ export function getOverallStats(data: ProgressData): {
   let totalAttempts = 0;
   let totalCorrect = 0;
   for (const mode of ['practice', 'compose', 'shuffle'] as const) {
-    for (const level of ['beginner', 'intermediate', 'advanced'] as const) {
+    for (const level of ['starter', 'beginner', 'intermediate', 'advanced'] as const) {
       totalAttempts += data[mode][level].totalAttempts;
       totalCorrect += data[mode][level].correctCount;
     }

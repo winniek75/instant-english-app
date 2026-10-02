@@ -4,26 +4,36 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import WordPracticeCard from '@/components/WordPracticeCard';
-import { getWordsByLevel, getLevelLabel, getLevelColor, Level } from '@/lib/words';
+import { getWordsByLevel, getLevelLabel, getLevelColor, LEVELS, parseLevel } from '@/lib/words';
+import { useAiStatus } from '@/lib/useAiStatus';
+import { PORTAL_URL } from '@/lib/judge';
 import { incrementSessions } from '@/lib/storage';
 
 function PracticeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const level = (searchParams.get('level') as Level) || 'beginner';
-  const filteredWords = getWordsByLevel(level);
+  const level = parseLevel(searchParams.get('level'));
+  // ディープリンク: /practice?level=beginner&count=10 （count = 先頭から何語やるか）
+  const countParam = parseInt(searchParams.get('count') || '', 10);
+  const allWords = getWordsByLevel(level);
+  const filteredWords = countParam > 0 ? allWords.slice(0, countParam) : allWords;
+  const countQuery = countParam > 0 ? `&count=${countParam}` : '';
+  const aiAvailable = useAiStatus();
+
   const colors = getLevelColor(level);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [learnedWords, setLearnedWords] = useState<number[]>([]);
   const [scores, setScores] = useState<number[]>([]);
 
+  const finished = learnedWords.length >= filteredWords.length;
+
   const handleNext = () => {
+    if (finished) return;
+    setLearnedWords([...learnedWords, currentIndex]);
     if (currentIndex < filteredWords.length - 1) {
-      setLearnedWords([...learnedWords, currentIndex]);
       setCurrentIndex(currentIndex + 1);
     } else {
-      setLearnedWords([...learnedWords, currentIndex]);
       incrementSessions();
     }
   };
@@ -32,7 +42,7 @@ function PracticeContent() {
     setScores([...scores, score]);
   };
 
-  const progress = ((learnedWords.length + 1) / filteredWords.length) * 100;
+  const progress = Math.min(100, ((learnedWords.length + 1) / filteredWords.length) * 100);
   const averageScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
   return (
@@ -73,13 +83,13 @@ function PracticeContent() {
 
           {/* Level switcher */}
           <div className="flex justify-center gap-2 mt-4">
-            {(['beginner', 'intermediate', 'advanced'] as Level[]).map((l) => {
+            {LEVELS.map((l) => {
               const c = getLevelColor(l);
               return (
                 <button
                   key={l}
                   onClick={() => {
-                    router.push(`/practice?level=${l}`);
+                    router.push(`/practice?level=${l}${countQuery}`);
                     setCurrentIndex(0);
                     setLearnedWords([]);
                     setScores([]);
@@ -97,15 +107,21 @@ function PracticeContent() {
           </div>
         </div>
 
-        <WordPracticeCard
-          word={filteredWords[currentIndex]}
-          onNext={handleNext}
-          onComplete={handleComplete}
-        />
+        {!finished && (
+          <WordPracticeCard
+            key={filteredWords[currentIndex].id}
+            word={filteredWords[currentIndex]}
+            onNext={handleNext}
+            onComplete={handleComplete}
+            aiAvailable={aiAvailable}
+          />
+        )}
 
-        {learnedWords.length === filteredWords.length && (() => {
+        {finished && (() => {
           const practiceAccuracy = scores.length > 0 ? averageScore : 0;
-          const nearMissMsg = practiceAccuracy === 100
+          // スキップした単語があるときは「PERFECT」と言わない
+          const practicedAll = scores.length >= filteredWords.length;
+          const nearMissMsg = !practicedAll ? null : practiceAccuracy === 100
             ? 'PERFECT! \uD83D\uDC8E'
             : practiceAccuracy >= 80
               ? `\u3042\u3068${100 - practiceAccuracy}\u70B9\u3067\u30D1\u30FC\u30D5\u30A7\u30AF\u30C8\uFF01`
@@ -113,9 +129,9 @@ function PracticeContent() {
           return (
           <div className="mt-8 text-center animate-popIn">
             <div className="card-base p-8 max-w-2xl mx-auto">
-              <div className="text-6xl mb-4">{practiceAccuracy === 100 ? '\uD83D\uDC8E' : '\uD83C\uDF89'}</div>
+              <div className="text-6xl mb-4">{practicedAll && practiceAccuracy === 100 ? '\uD83D\uDC8E' : '\uD83C\uDF89'}</div>
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                すべての単語を学習しました！
+                さいごの単語まで進みました！
               </h2>
               {nearMissMsg && (
                 <p className={`text-lg font-bold mb-2 ${practiceAccuracy === 100 ? 'text-yellow-500' : 'text-blue-500'}`}>
@@ -124,7 +140,7 @@ function PracticeContent() {
               )}
               <div className="mb-6 space-y-2">
                 <p className="text-gray-600">
-                  {filteredWords.length}個の単語を完了しました。素晴らしい！
+                  {filteredWords.length}個の単語を見ました。おつかれさま！
                 </p>
                 {scores.length > 0 && (
                   <div className={`${colors.bg} p-4 rounded-lg`}>
@@ -132,7 +148,7 @@ function PracticeContent() {
                       🏆 最終平均スコア: {averageScore}点
                     </p>
                     <p className={`${colors.text} text-sm opacity-75`}>
-                      練習回数: {scores.length}回
+                      採点された練習: {scores.length}回
                     </p>
                   </div>
                 )}
@@ -160,6 +176,9 @@ function PracticeContent() {
                 >
                   ホームに戻る
                 </button>
+                <a href={PORTAL_URL} className="block text-sm text-gray-400 hover:text-gray-600 underline pt-1">
+                  🏠 学習ホームにもどる
+                </a>
               </div>
             </div>
           </div>

@@ -4,31 +4,30 @@ import { useState } from 'react';
 import { Word } from '@/lib/words';
 import { playCorrectSound, playWrongSound } from '@/lib/sounds';
 import { recordAttempt, recordWrongAnswer } from '@/lib/storage';
+import { JudgeResult, requestJudge } from '@/lib/judge';
 
 interface WordPracticeCardProps {
   word: Word;
   onNext: () => void;
   onComplete: (score: number) => void;
+  // AI採点が使えるか（null = 確認中）
+  aiAvailable?: boolean | null;
 }
 
 type PracticeMode = 'learn' | 'spelling' | 'sentence';
 
-export default function WordPracticeCard({ word, onNext, onComplete }: WordPracticeCardProps) {
+export default function WordPracticeCard({ word, onNext, onComplete, aiAvailable = null }: WordPracticeCardProps) {
   const [mode, setMode] = useState<PracticeMode>('learn');
   const [showExample, setShowExample] = useState(false);
   const [userInput, setUserInput] = useState('');
   const [feedback, setFeedback] = useState<{
-    isCorrect?: boolean;
-    message?: string;
-    color?: string;
-    score?: number;
-    feedback?: {
-      grammar?: string;
-      improvements?: string;
-    };
+    isCorrect: boolean;
+    message: string;
   } | null>(null);
+  const [judge, setJudge] = useState<JudgeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [score, setScore] = useState(0);
+  // null = まだ採点されていない（平均点に入れない）
+  const [score, setScore] = useState<number | null>(null);
 
   const handleSpellingSubmit = async () => {
     const isCorrect = userInput.toLowerCase().trim() === word.english.toLowerCase();
@@ -39,8 +38,7 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
       playCorrectSound();
       setFeedback({
         isCorrect: true,
-        message: '正解！完璧です！',
-        color: 'green'
+        message: '正解！完璧です！'
       });
     } else {
       playWrongSound();
@@ -53,8 +51,7 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
       });
       setFeedback({
         isCorrect: false,
-        message: `正解: ${word.english}`,
-        color: 'red'
+        message: `正解: ${word.english}`
       });
     }
     recordAttempt('practice', word.level, isCorrect, currentScore);
@@ -64,60 +61,53 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
     if (!userInput.trim()) return;
 
     setIsLoading(true);
+    const taskStr = `「${word.english}」を使って英文を作る`;
+    // 通信失敗・例外のときは status: 'ungraded' が返る（偽の点数は作らない）
+    const res = await requestJudge({
+      userInput,
+      task: taskStr,
+      targetWord: word.english,
+      level: word.level,
+      model: word.example,
+    });
+    setJudge(res);
+    setIsLoading(false);
 
-    try {
-      const response = await fetch('/api/judge', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userInput: userInput,
-          task: `「${word.english}」を使って英文を作る`,
-          targetWord: word.english,
-        }),
-      });
-
-      const data = await response.json();
-      setFeedback(data);
-      setScore(data.score);
-      if (data.isCorrect) {
+    // 記録するのは採点できたものだけ
+    if (res.status === 'model-match') {
+      setScore(100);
+      playCorrectSound();
+      recordAttempt('practice', word.level, true, 100);
+    } else if (res.status === 'graded') {
+      setScore(res.score);
+      if (res.isCorrect) {
         playCorrectSound();
       } else {
         playWrongSound();
         recordWrongAnswer({
-          question: `「${word.english}」を使って英文を作る`,
+          question: taskStr,
           userAnswer: userInput,
-          correctAnswer: data.correctedSentence || '',
+          correctAnswer: res.correctedSentence || '',
           mode: 'practice-sentence',
           level: word.level,
         });
       }
-      recordAttempt('practice', word.level, data.isCorrect, data.score);
-    } catch (error) {
-      console.error('Error:', error);
-      setFeedback({
-        score: 50,
-        isCorrect: false,
-        feedback: {
-          grammar: 'システムエラーが発生しました。',
-          improvements: 'もう一度お試しください。'
-        }
-      });
-    } finally {
-      setIsLoading(false);
+      recordAttempt('practice', word.level, res.isCorrect, res.score);
+    } else {
+      setScore(null);
     }
   };
 
   const handleComplete = () => {
-    onComplete(score);
+    if (score !== null) onComplete(score);
     onNext();
   };
 
   const resetExercise = () => {
     setUserInput('');
     setFeedback(null);
-    setScore(0);
+    setJudge(null);
+    setScore(null);
   };
 
   if (mode === 'learn') {
@@ -188,7 +178,7 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
         <div className="space-y-6">
           <div className="text-center">
             <button
-              onClick={() => setMode('learn')}
+              onClick={() => { resetExercise(); setMode('learn'); }}
               className="mb-4 text-blue-600 hover:text-blue-800"
             >
               ← 学習モードに戻る
@@ -255,7 +245,7 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
         <div className="space-y-6">
           <div className="text-center">
             <button
-              onClick={() => setMode('learn')}
+              onClick={() => { resetExercise(); setMode('learn'); }}
               className="mb-4 text-blue-600 hover:text-blue-800"
             >
               ← 学習モードに戻る
@@ -269,7 +259,21 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
             <p className="text-gray-600 mt-2">{word.japanese} ({word.partOfSpeech})</p>
           </div>
 
-          {!feedback ? (
+          {word.frame && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+              <p className="text-xs text-amber-700 font-bold mb-1">🧩 この形で書いてみよう</p>
+              <p className="text-2xl font-bold text-amber-900 tracking-wide">{word.frame}</p>
+              {word.frameJp && <p className="text-sm text-amber-700 mt-1">{word.frameJp}</p>}
+            </div>
+          )}
+
+          {aiAvailable === false && !judge && (
+            <p className="text-center text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg px-3 py-2">
+              ℹ️ いまはAI採点が使えません（お手本との比較で確認します）
+            </p>
+          )}
+
+          {!judge ? (
             <div className="space-y-4">
               <textarea
                 value={userInput}
@@ -287,13 +291,13 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
                 <button
                   onClick={handleSentenceSubmit}
                   className={`flex-1 py-3 font-bold rounded-lg transition-all duration-300 ${
-                    isLoading
-                      ? 'bg-gray-400 cursor-not-allowed'
+                    isLoading || !userInput.trim()
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-purple-500 text-white hover:bg-purple-600'
                   }`}
                   disabled={isLoading || !userInput.trim()}
                 >
-                  {isLoading ? 'AI判定中...' : 'AI判定する'}
+                  {isLoading ? '確認中...' : aiAvailable === false ? 'お手本でたしかめる' : aiAvailable ? 'AI判定する' : '提出する'}
                 </button>
               </div>
             </div>
@@ -304,16 +308,69 @@ export default function WordPracticeCard({ word, onNext, onComplete }: WordPract
                 <p className="text-gray-700">{userInput}</p>
               </div>
 
-              <div className={`p-4 rounded-lg ${feedback.isCorrect ? 'bg-green-50' : 'bg-yellow-50'}`}>
-                <div className="flex items-center mb-2">
-                  <span className="text-2xl mr-2">
-                    {(feedback.score || 0) >= 80 ? '🌟' : (feedback.score || 0) >= 60 ? '👍' : '📚'}
-                  </span>
-                  <span className="text-2xl font-bold text-gray-800">{feedback.score || 0}点</span>
+              {judge.status === 'graded' && (
+                <div className={`p-4 rounded-lg ${judge.isCorrect ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                  <div className="flex items-center mb-2">
+                    <span className="text-2xl mr-2">
+                      {judge.score >= 80 ? '🌟' : judge.score >= 60 ? '👍' : '📚'}
+                    </span>
+                    <span className="text-2xl font-bold text-gray-800">{judge.score}点</span>
+                  </div>
+                  {judge.correctedSentence && judge.correctedSentence.trim() !== userInput.trim() && (
+                    <p className="text-sm text-green-700 mb-2">✨ 修正版: {judge.correctedSentence}</p>
+                  )}
+                  {judge.feedback.improvements && (
+                    <p className="text-sm text-gray-600">💡 {judge.feedback.improvements}</p>
+                  )}
                 </div>
-                <p className="text-sm text-gray-600 mb-3">{feedback.feedback?.improvements || 'Good job!'}</p>
-              </div>
+              )}
 
+              {judge.status === 'model-match' && (
+                <div className="p-4 rounded-lg bg-green-50 text-green-800 text-center">
+                  <div className="text-4xl mb-2">🎉</div>
+                  <p className="text-lg font-bold">正解！お手本とおなじ文が書けました。</p>
+                </div>
+              )}
+
+              {judge.status === 'compare' && (
+                <div className="p-4 rounded-lg bg-blue-50">
+                  <p className="font-bold text-gray-800 mb-1">🔍 お手本とくらべてみよう</p>
+                  <p className="text-xs text-gray-500 mb-2">
+                    いまはAI採点が使えないので、点数や○×はつきません。お手本とちがっていても、まちがいとはかぎりません。
+                  </p>
+                  {judge.model && <p className="text-green-700 mb-2">📖 お手本: {judge.model}</p>}
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {judge.checks.map((c, i) => <li key={i}>・{c}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {judge.status === 'ungraded' && (
+                <div className="p-4 rounded-lg bg-gray-100 text-center">
+                  <div className="text-4xl mb-2">🤔</div>
+                  <p className="text-lg font-bold text-gray-700">採点できませんでした</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    通信などの問題です。点数はついていません。学習記録にも入りません。
+                  </p>
+                  {judge.model && <p className="text-green-700 mt-2 text-sm">📖 お手本: {judge.model}</p>}
+                  <button
+                    onClick={handleSentenceSubmit}
+                    disabled={isLoading}
+                    className="mt-3 px-5 py-2 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 disabled:opacity-50"
+                  >
+                    {isLoading ? '確認中...' : '🔄 もう一度送る'}
+                  </button>
+                </div>
+              )}
+
+              {judge.status !== 'model-match' && (
+                <button
+                  onClick={() => { setJudge(null); setScore(null); }}
+                  className="w-full py-3 bg-white border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50"
+                >
+                  ✏️ 書き直してみる
+                </button>
+              )}
               <button
                 onClick={handleComplete}
                 className="w-full py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600"

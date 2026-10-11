@@ -359,14 +359,14 @@ function ShuffleContent() {
                 onClick={() => {
                   initQuestion();
                 }}
-                className="px-6 py-3 bg-gray-100 text-gray-600 font-bold rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-4 sm:px-6 py-3 min-h-[44px] bg-gray-100 text-gray-600 font-bold rounded-lg hover:bg-gray-200 transition-colors"
               >
                 リセット
               </button>
               <button
                 onClick={handleCheck}
                 disabled={selectedWords.length === 0}
-                className={`flex-1 py-3 font-bold rounded-lg transition-all ${
+                className={`flex-1 py-3 min-h-[44px] font-bold rounded-lg transition-all ${
                   selectedWords.length === 0
                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     : `bg-gradient-to-r ${colors.gradient} text-white hover:shadow-lg`
@@ -378,7 +378,7 @@ function ShuffleContent() {
           ) : (
             <button
               onClick={handleNext}
-              className={`flex-1 py-3 bg-gradient-to-r ${colors.gradient} text-white font-bold rounded-lg hover:shadow-lg transition-all`}
+              className={`flex-1 py-3 min-h-[44px] bg-gradient-to-r ${colors.gradient} text-white font-bold rounded-lg hover:shadow-lg transition-all`}
             >
               {currentIndex < sentences.length - 1 ? '次の問題へ →' : '結果を見る'}
             </button>

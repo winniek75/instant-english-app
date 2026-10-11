@@ -58,11 +58,11 @@ export default function FeedbackModal({ isOpen, result, userInput, onNext, onRew
   const model = result.status !== 'graded' ? result.model : undefined;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-slideUp">
-        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-t-2xl">
+        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 sm:p-6 rounded-t-2xl">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">{title}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
             <button
               onClick={onRewrite}
               aria-label="とじる"
@@ -73,11 +73,11 @@ export default function FeedbackModal({ isOpen, result, userInput, onNext, onRew
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {result.status === 'graded' && (
             <div className="text-center">
-              <div className="text-6xl mb-2">{getScoreEmoji(result.score)}</div>
-              <div className={`text-5xl font-bold ${getScoreColor(result.score)}`}>
+              <div className="text-5xl sm:text-6xl mb-2">{getScoreEmoji(result.score)}</div>
+              <div className={`text-4xl sm:text-5xl font-bold ${getScoreColor(result.score)}`}>
                 {result.score}点
               </div>
               <div className="text-gray-600 mt-2">
@@ -198,7 +198,7 @@ export default function FeedbackModal({ isOpen, result, userInput, onNext, onRew
             {result.status === 'ungraded' && onResend && (
               <button
                 onClick={onResend}
-                className="w-full py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold rounded-lg hover:from-green-600 hover:to-blue-600 transition-all duration-300"
+                className="w-full py-3 sm:py-4 min-h-[44px] bg-gradient-to-r from-green-500 to-blue-500 text-white font-bold rounded-lg hover:from-green-600 hover:to-blue-600 transition-all duration-300"
               >
                 🔄 もう一度送る
               </button>
@@ -206,14 +206,14 @@ export default function FeedbackModal({ isOpen, result, userInput, onNext, onRew
             {result.status !== 'model-match' && !(result.status === 'graded' && result.isCorrect && result.score >= 90) && (
               <button
                 onClick={onRewrite}
-                className="w-full py-3 bg-white border-2 border-blue-400 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors"
+                className="w-full py-3 min-h-[44px] bg-white border-2 border-blue-400 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors"
               >
                 ✏️ 書き直してみる
               </button>
             )}
             <button
               onClick={onNext}
-              className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
+              className="w-full py-3 sm:py-4 min-h-[44px] bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
             >
               次の問題へ
             </button>

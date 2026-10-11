@@ -88,7 +88,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3">
             <span className="gradient-text">瞬間英作文トレーニング</span>
           </h1>
           <p className="text-lg text-gray-500 font-medium">
@@ -102,7 +102,7 @@ export default function Home() {
         </div>
 
         {/* Mode selection */}
-        <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto mb-10">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto mb-10">
           {(Object.keys(modeConfig) as GameMode[]).map((mode) => {
             const cfg = modeConfig[mode];
             const isSelected = selectedMode === mode;
@@ -110,7 +110,7 @@ export default function Home() {
               <button
                 key={mode}
                 onClick={() => setSelectedMode(isSelected ? null : mode)}
-                className={`card-base p-6 text-left hover-lift ${
+                className={`card-base p-4 sm:p-6 text-left hover-lift ${
                   isSelected ? 'ring-2 ring-blue-400 border-blue-300 shadow-xl' : ''
                 }`}
               >
@@ -182,7 +182,7 @@ export default function Home() {
         {stats && stats.totalAttempts > 0 && (
           <div className="card-base p-6 max-w-3xl mx-auto mb-8 animate-fadeIn">
             <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">あなたの学習記録</h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <div className="text-center">
                 <div className="text-2xl font-extrabold text-blue-600">{stats.totalAttempts}</div>
                 <div className="text-xs text-gray-500 mt-1">総回答数</div>
@@ -220,9 +220,9 @@ export default function Home() {
         )}
 
         {/* Features section */}
-        <div className="card-base p-8 max-w-3xl mx-auto">
-          <h3 className="text-xl font-bold text-gray-800 mb-5 text-center">アプリの特徴</h3>
-          <div className="grid md:grid-cols-4 gap-5">
+        <div className="card-base p-4 sm:p-8 max-w-3xl mx-auto">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-5 text-center">アプリの特徴</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
             <div className="text-center">
               <div className="text-3xl mb-2">{aiAvailable ? '🤖' : aiAvailable === false ? '📖' : '✍️'}</div>
               <h4 className="font-bold text-gray-800 text-sm mb-1" data-testid="feature-judge">

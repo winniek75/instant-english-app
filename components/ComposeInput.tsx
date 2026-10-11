@@ -43,13 +43,13 @@ export default function ComposeInput({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-3xl w-full mx-auto">
-      <div className="space-y-6">
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 max-w-3xl w-full mx-auto">
+      <div className="space-y-4 sm:space-y-6">
         <div className="text-center space-y-3">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
             📝 英作文にチャレンジ！
           </h2>
-          <p className="text-lg text-gray-700">{prompt}</p>
+          <p className="text-base sm:text-lg text-gray-700">{prompt}</p>
 
           {targetWord && (
             <div className="inline-block px-4 py-2 bg-yellow-100 rounded-lg">
@@ -88,22 +88,22 @@ export default function ComposeInput({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={frame ? `${frame.replace('___', '…')} のように書いてみよう` : '英文を入力してください...'}
-            className="w-full h-32 p-4 border-2 border-gray-200 rounded-lg resize-none focus:border-blue-500 focus:outline-none transition-colors text-lg"
+            className="w-full h-28 sm:h-32 p-3 sm:p-4 border-2 border-gray-200 rounded-lg resize-none focus:border-blue-500 focus:outline-none transition-colors text-base sm:text-lg"
             disabled={isLoading}
           />
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => setInput('')}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              className="px-4 sm:px-6 py-3 min-h-[44px] bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
               disabled={isLoading}
             >
               クリア
             </button>
             <button
               type="submit"
-              className={`flex-1 py-3 font-bold rounded-lg transition-all duration-300 ${
+              className={`flex-1 py-3 min-h-[44px] font-bold rounded-lg transition-all duration-300 ${
                 isLoading || !input.trim()
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 transform hover:scale-105'

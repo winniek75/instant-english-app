@@ -196,3 +196,44 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ===== Mobile Optimization (<=640px) ===== */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* Prevent horizontal overflow */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Touch targets: min 44px height */
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+
+  /* Card padding reduction */
+  .card-base {
+    @apply p-4;
+  }
+
+  /* Word chip touch targets */
+  .word-chip {
+    @apply px-3 py-2.5 text-base;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Level badge */
+  .level-badge {
+    @apply px-2 py-1 text-xs;
+  }
+}

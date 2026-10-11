@@ -72,9 +72,9 @@ export default function VoiceInput({ prompt, hint, frame, aiAvailable = null, on
 
   if (!isSupported) {
     return (
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-3xl w-full mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 max-w-3xl w-full mx-auto">
         <div className="text-center text-red-600">
-          <p className="text-xl">⚠️ 音声認識がサポートされていません</p>
+          <p className="text-lg sm:text-xl">⚠️ 音声認識がサポートされていません</p>
           <p className="mt-2">ChromeまたはEdgeブラウザをご利用ください</p>
         </div>
       </div>
@@ -82,13 +82,13 @@ export default function VoiceInput({ prompt, hint, frame, aiAvailable = null, on
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-3xl w-full mx-auto">
-      <div className="space-y-6">
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 max-w-3xl w-full mx-auto">
+      <div className="space-y-4 sm:space-y-6">
         <div className="text-center space-y-3">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
             🎤 口頭で英作文！
           </h2>
-          <p className="text-lg text-gray-700">{prompt}</p>
+          <p className="text-base sm:text-lg text-gray-700">{prompt}</p>
           {frame && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p className="text-xs text-amber-700 font-bold mb-1">🧩 この形で言ってみよう</p>
@@ -104,14 +104,14 @@ export default function VoiceInput({ prompt, hint, frame, aiAvailable = null, on
         <div className="flex flex-col items-center space-y-6">
           <button
             onClick={toggleListening}
-            className={`w-32 h-32 rounded-full transition-all duration-300 transform hover:scale-110 ${
+            className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full transition-all duration-300 transform hover:scale-110 ${
               isListening
                 ? 'bg-red-500 animate-pulse'
                 : 'bg-blue-500 hover:bg-blue-600'
             }`}
             disabled={isLoading}
           >
-            <span className="text-white text-5xl">
+            <span className="text-white text-4xl sm:text-5xl">
               {isListening ? '⏸️' : '🎤'}
             </span>
           </button>
@@ -123,17 +123,17 @@ export default function VoiceInput({ prompt, hint, frame, aiAvailable = null, on
           )}
 
           {transcript && (
-            <div className="w-full flex gap-4">
+            <div className="w-full flex gap-3 sm:gap-4">
               <button
                 onClick={() => setTranscript('')}
-                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 sm:px-6 py-3 min-h-[44px] bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                 disabled={isLoading}
               >
                 クリア
               </button>
               <button
                 onClick={handleSubmit}
-                className={`flex-1 py-3 font-bold rounded-lg transition-all duration-300 ${
+                className={`flex-1 py-3 min-h-[44px] font-bold rounded-lg transition-all duration-300 ${
                   isLoading
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600 transform hover:scale-105'

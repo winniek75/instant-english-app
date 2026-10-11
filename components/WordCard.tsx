@@ -12,10 +12,10 @@ export default function WordCard({ word, onNext }: WordCardProps) {
   const [showExample, setShowExample] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full mx-auto transform transition-all duration-300 hover:scale-105">
-      <div className="space-y-6">
+    <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 max-w-2xl w-full mx-auto transform transition-all duration-300 hover:scale-105">
+      <div className="space-y-4 sm:space-y-6">
         <div className="text-center">
-          <h2 className="text-4xl font-bold text-blue-600 mb-2">{word.english}</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">{word.english}</h2>
           <p className="text-gray-500 text-sm">{word.partOfSpeech}</p>
         </div>
 
@@ -26,7 +26,7 @@ export default function WordCard({ word, onNext }: WordCardProps) {
         <div className="border-t pt-4">
           <button
             onClick={() => setShowExample(!showExample)}
-            className="w-full text-left p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            className="w-full text-left p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors min-h-[44px]"
           >
             <div className="flex justify-between items-center">
               <span className="text-blue-700 font-medium">例文を見る</span>
@@ -44,7 +44,7 @@ export default function WordCard({ word, onNext }: WordCardProps) {
 
         <button
           onClick={onNext}
-          className="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+          className="w-full py-3 sm:py-4 min-h-[44px] bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
         >
           次の単語へ →
         </button>
